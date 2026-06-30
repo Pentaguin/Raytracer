@@ -1,5 +1,7 @@
 package com.example.raytracer.raytracer;
 
+import static com.example.raytracer.util.MathUtil.randomDouble;
+
 public class Vec3 {
 
   public double x, y, z;
@@ -42,6 +44,14 @@ public class Vec3 {
     return x * x + y * y + z * z;
   }
 
+  public static Vec3 random() {
+    return new Vec3(randomDouble(), randomDouble(), randomDouble());
+  }
+
+  public static Vec3 random(double min, double max) {
+    return new Vec3(randomDouble(min,max), randomDouble(min,max), randomDouble(min,max));
+  }
+
   public Vec3 normalize() {
     return divide(length());
   }
@@ -56,5 +66,23 @@ public class Vec3 {
 
   public static Vec3 unitVector(Vec3 v) {
     return v.divide(v.length());
+  }
+
+  public static Vec3 randomUnitVector() {
+    while (true) {
+      double minLengthSquared = 1e-160;
+      Vec3 p = Vec3.random(-1,1);
+      double lensq = p.lengthSquared();
+      if (minLengthSquared < lensq && lensq <= 1)
+        return p .divide(Math.sqrt(lensq));
+    }
+  }
+
+  public static Vec3 randomOnHemisphere(Vec3 normal) {
+    Vec3 onUnitSphere = randomUnitVector();
+    if (dot(onUnitSphere, normal) > 0.0) // In the same hemisphere as the normal
+      return onUnitSphere;
+    else
+      return onUnitSphere.negate();
   }
 }

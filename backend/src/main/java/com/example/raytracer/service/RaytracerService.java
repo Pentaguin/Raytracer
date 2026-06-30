@@ -18,7 +18,7 @@ public class RaytracerService {
     world.add(new Sphere(new Vec3(0, 0, -1), 0.5));
     world.add(new Sphere(new Vec3(0, -100.5, -1), 100));
 
-    Camera camera = new Camera(width, height, pixelPerSamples);
+    Camera camera = new Camera(width, height, pixelPerSamples, 50);
     return camera.render(world);
   }
 }

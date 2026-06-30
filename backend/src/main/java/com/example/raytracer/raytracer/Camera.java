@@ -13,11 +13,13 @@ public class Camera {
   private Vec3 pixelDeltaU;
   private Vec3 pixelDeltaV;
   private Vec3 center;
+  private int maxDepth;
 
-  public Camera(int width, int height, int samplesPerPixel) {
+  public Camera(int width, int height, int samplesPerPixel, int maxDepth) {
     this.width = width;
     this.height = height;
     this.samplesPerPixel = samplesPerPixel;
+    this.maxDepth = maxDepth;
   }
 
   public BufferedImage render(Hittable world) {
@@ -51,9 +53,8 @@ public class Camera {
 
         for (int s = 0; s < samplesPerPixel; s++) {
 
-          Ray r = getRay(i, j); // must include randomness
-
-          pixelColor = pixelColor.add(rayColor(r, world));
+          Ray r = getRay(i, j);
+          pixelColor = pixelColor.add(rayColor(r, maxDepth ,world));
         }
         double pixelScale = 1.0 / samplesPerPixel;
         pixelColor = pixelColor.multiply(pixelScale);
@@ -88,19 +89,37 @@ public class Camera {
   private int toRGB(Vec3 pixelColor) {
     int colorScale = 256;
     Interval intensity = new Interval(0.000, 0.999);
-    int ir = (int) (colorScale * intensity.clamp(pixelColor.x));
-    int ig = (int) (colorScale * intensity.clamp(pixelColor.y));
-    int ib = (int) (colorScale * intensity.clamp(pixelColor.z));
+
+    // Apply a linear to gamma transform for gamma 2
+    double r = linearToGamma(pixelColor.x);
+    double g = linearToGamma(pixelColor.y);
+    double b = linearToGamma(pixelColor.z);
+
+    int ir = (int) (colorScale * intensity.clamp(r));
+    int ig = (int) (colorScale * intensity.clamp(g));
+    int ib = (int) (colorScale * intensity.clamp(b));
 
     return (ir << 16) | (ig << 8) | ib;
   }
 
-  private Vec3 rayColor(Ray r, Hittable world) {
+  public static double linearToGamma(double linearComponent)
+  {
+    if (linearComponent > 0)
+      return Math.sqrt(linearComponent);
+
+    return 0;
+  }
+
+  private Vec3 rayColor(Ray r, int depth, Hittable world) {
+    // If we've exceeded the ray bounce limit, no more light is gathered.
+    if (depth <= 0)
+      return new Vec3(0,0,0);
 
     HitRecord rec = new HitRecord();
 
     if (world.hit(r, new Interval(0.001, Double.POSITIVE_INFINITY), rec)) {
-      return rec.normal.add(new Vec3(1, 1, 1)).multiply(0.5);
+      Vec3 direction = rec.normal.add(Vec3.randomUnitVector());
+      return rayColor(new Ray(rec.point, direction), depth - 1,world).multiply(0.1);
     }
 
     Vec3 unitDirection = r.getDirection().normalize();
