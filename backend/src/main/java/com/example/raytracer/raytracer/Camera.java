@@ -93,8 +93,14 @@ public class Camera {
     HitRecord rec = new HitRecord();
 
     if (world.hit(r, new Interval(0.001, Double.POSITIVE_INFINITY), rec)) {
-      Vec3 direction = rec.normal.add(Vec3.randomUnitVector());
-      return rayColor(new Ray(rec.point, direction), depth - 1,world).multiply(0.1);
+      ScatterResult s = rec.material.scatter(r, rec);
+
+      if (s != null) {
+        return rayColor(s.scattered(), depth - 1, world)
+                .multiply(s.attenuation());
+      }
+
+      return new Vec3(0, 0, 0);
     }
 
     Vec3 unitDirection = r.getDirection().normalize();

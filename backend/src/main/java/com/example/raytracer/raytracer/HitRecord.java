@@ -5,6 +5,7 @@ import static com.example.raytracer.raytracer.Vec3.dot;
 public class HitRecord {
   public Vec3 point;
   public Vec3 normal;
+  public Material material;
   public double t;
   boolean frontFace;
 

@@ -35,6 +35,7 @@ public class HittableList implements Hittable {
         rec.t = tempRec.t;
         rec.point = tempRec.point;
         rec.normal = tempRec.normal;
+        rec.material = tempRec.material;
       }
     }
 

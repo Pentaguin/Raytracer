@@ -32,6 +32,10 @@ public class Vec3 {
     return new Vec3(x * t, y * t, z * t);
   }
 
+  public Vec3 multiply(Vec3 v) {
+    return new Vec3(x * v.x, y * v.y, z * v.z);
+  }
+
   public Vec3 divide(double t) {
     return multiply(1.0 / t);
   }
@@ -84,5 +88,15 @@ public class Vec3 {
       return onUnitSphere;
     else
       return onUnitSphere.negate();
+  }
+
+  public static Vec3 reflect(Vec3 v, Vec3 n) {
+    return v.subtract(n.multiply(2.0 * Vec3.dot(v, n)));
+  }
+
+  public boolean nearZero() {
+    // Return true if the vector is close to zero in all dimensions.
+    double s = 1e-8;
+    return (Math.abs(x) < s) && (Math.abs(y) < s) && (Math.abs(z) < s);
   }
 }
