@@ -6,42 +6,18 @@ info:
 
 paths:
   /render/image:
-    get:
+    post:
       summary: Render a ray traced image
-      description: Returns a generated ray traced image as PNG
+      description: Returns a generated ray traced image as PNG.
       operationId: renderImage
-      parameters:
-        - name: width
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 100
-            maximum: 500
-            default: 300
-        - name: height
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 100
-            maximum: 500
-            default: 300
-        - name: samplesPerPixel
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 30
-        - name: vfov
-          description: Vertical field of vision
-          in: query
-          required: true
-          schema:
-            type: double
-            default: 90
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenderRequest"
+
       responses:
         "200":
           description: Rendered image
@@ -50,3 +26,118 @@ paths:
               schema:
                 type: string
                 format: binary
+
+components:
+  schemas:
+
+    RenderRequest:
+      type: object
+      required:
+        - width
+        - height
+        - samplesPerPixel
+        - maxDepth
+        - vfov
+        - lookFromX
+        - lookFromY
+        - lookFromZ
+        - lookAtX
+        - lookAtY
+        - lookAtZ
+        - vupX
+        - vupY
+        - vupZ
+        - defocusAngle
+        - focusDistance
+
+      properties:
+
+        width:
+          type: integer
+          minimum: 100
+          maximum: 500
+          example: 300
+
+        height:
+          type: integer
+          minimum: 100
+          maximum: 500
+          example: 225
+
+        samplesPerPixel:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 10
+
+        maxDepth:
+          type: integer
+          minimum: 1
+          maximum: 50
+          example: 10
+
+        vfov:
+          type: number
+          format: double
+          minimum: 5
+          maximum: 120
+          example: 20
+
+        lookFromX:
+          type: number
+          format: double
+          example: 13
+
+        lookFromY:
+          type: number
+          format: double
+          example: 2
+
+        lookFromZ:
+          type: number
+          format: double
+          example: 3
+
+        lookAtX:
+          type: number
+          format: double
+          example: 0
+
+        lookAtY:
+          type: number
+          format: double
+          example: 0
+
+        lookAtZ:
+          type: number
+          format: double
+          example: 0
+
+        vupX:
+          type: number
+          format: double
+          example: 0
+
+        vupY:
+          type: number
+          format: double
+          example: 1
+
+        vupZ:
+          type: number
+          format: double
+          example: 0
+
+        defocusAngle:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 10
+          example: 0.6
+
+        focusDistance:
+          type: number
+          format: double
+          minimum: 0.1
+          maximum: 100
+          example: 10.0

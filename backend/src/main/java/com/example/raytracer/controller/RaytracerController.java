@@ -1,12 +1,16 @@
 package com.example.raytracer.controller;
 
 import com.example.raytracer.api.RenderApi;
+import com.example.raytracer.api.dto.RenderRequest;
 import com.example.raytracer.service.RaytracerService;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,18 +21,20 @@ public class RaytracerController implements RenderApi {
   private final RaytracerService raytracerService;
 
   @Override
-  public ResponseEntity<byte[]> renderImage(
-      Integer width, Integer height, Integer samplesPerPixel, Double vfov) {
+  public ResponseEntity<byte[]> renderImage(RenderRequest request) {
 
-    BufferedImage img = raytracerService.render(width, height, samplesPerPixel, vfov);
+    BufferedImage image = raytracerService.render(request);
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
     try {
-      ImageIO.write(img, "png", baos);
+      ImageIO.write(image, "png", baos);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
 
-    return ResponseEntity.ok(baos.toByteArray());
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_PNG_VALUE)
+        .body(baos.toByteArray());
   }
 }

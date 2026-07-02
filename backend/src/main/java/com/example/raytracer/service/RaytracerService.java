@@ -1,5 +1,6 @@
 package com.example.raytracer.service;
 
+import com.example.raytracer.api.dto.RenderRequest;
 import com.example.raytracer.raytracer.BvhNode;
 import com.example.raytracer.raytracer.Camera;
 import com.example.raytracer.raytracer.HittableList;
@@ -13,24 +14,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class RaytracerService {
 
-  public BufferedImage render(int width, int height, int samplesPerPixel, double vfov) {
+  public BufferedImage render(RenderRequest request) {
 
     HittableList world = SampleSceneBuilder.randomScene();
     BvhNode bvhWorld = new BvhNode(world);
 
     Camera camera =
         new Camera(
-            width,
-            height,
-            samplesPerPixel,
-            20,
-            vfov,
-            new Vec3(13, 2, 3), // lookfrom
-            new Vec3(0, 0, 0), // lookat
-            new Vec3(0, 1, 0), // vup
-            0.6, // defocus angle
-            10.0 // focus dist
-            );
+            request.getWidth(),
+            request.getHeight(),
+            request.getSamplesPerPixel(),
+            request.getMaxDepth(),
+            request.getVfov(),
+            new Vec3(request.getLookFromX(), request.getLookFromY(), request.getLookFromZ()),
+            new Vec3(request.getLookAtX(), request.getLookAtY(), request.getLookAtZ()),
+            new Vec3(request.getVupX(), request.getVupY(), request.getVupZ()),
+            request.getDefocusAngle(),
+            request.getFocusDistance());
 
     return camera.render(bvhWorld);
   }
