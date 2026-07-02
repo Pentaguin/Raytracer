@@ -7,7 +7,7 @@ public class HitRecord {
   public Vec3 normal;
   public Material material;
   public double t;
-  boolean frontFace;
+  public boolean frontFace;
 
   void setFace(Ray r, Vec3 outwardNormal) {
     frontFace = dot(r.getDirection(), outwardNormal) < 0;

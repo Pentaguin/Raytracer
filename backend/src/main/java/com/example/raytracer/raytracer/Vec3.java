@@ -94,6 +94,14 @@ public class Vec3 {
     return v.subtract(n.multiply(2.0 * Vec3.dot(v, n)));
   }
 
+  public static Vec3 refract(Vec3 uv, Vec3 n, double etaiOverEtat) {
+    double cosTheta = Math.min(dot(uv.negate(), n), 1.0);
+    Vec3 rOutPerp =  uv.add(n.multiply(cosTheta))
+            .multiply(etaiOverEtat) ;
+    Vec3 rOutParallel = n.multiply(-Math.sqrt(Math.abs(1.0 - rOutPerp.lengthSquared())));
+    return rOutPerp.add(rOutParallel);
+  }
+
   public boolean nearZero() {
     // Return true if the vector is close to zero in all dimensions.
     double s = 1e-8;
