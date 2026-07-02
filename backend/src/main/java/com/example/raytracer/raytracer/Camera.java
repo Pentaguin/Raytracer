@@ -1,6 +1,7 @@
 package com.example.raytracer.raytracer;
 
 import static com.example.raytracer.raytracer.Vec3.cross;
+import static com.example.raytracer.raytracer.Vec3.randomInUnitDisk;
 import static com.example.raytracer.raytracer.Vec3.unitVector;
 import static com.example.raytracer.util.MathUtil.degreesToRadians;
 import static com.example.raytracer.util.MathUtil.randomDouble;
@@ -23,6 +24,12 @@ public class Camera {
   private Vec3 lookat; // Point camera is looking at
   private Vec3 vup; // Camera-relative "up" direction
 
+  private double defocusAngle = 0; // Variation angle of rays through each pixel
+  private double focusDist = 10; // Distance from camera lookfrom point to plane of perfect focus
+
+  private Vec3 defocusDiskU; // Defocus disk horizontal radius
+  private Vec3 defocusDiskV; // Defocus disk vertical radius
+
   public Camera(
       int width,
       int height,
@@ -31,7 +38,9 @@ public class Camera {
       double vfov,
       Vec3 lookfrom,
       Vec3 lookat,
-      Vec3 vup) {
+      Vec3 vup,
+      double defocusAngle,
+      double focusDist) {
     this.width = width;
     this.height = height;
     this.samplesPerPixel = samplesPerPixel;
@@ -40,6 +49,8 @@ public class Camera {
     this.lookfrom = lookfrom;
     this.lookat = lookat;
     this.vup = vup;
+    this.defocusAngle = defocusAngle;
+    this.focusDist = focusDist;
   }
 
   public BufferedImage render(Hittable world) {
@@ -48,10 +59,9 @@ public class Camera {
     center = lookfrom;
 
     // Determine viewport dimensions.
-    double focalLength = lookfrom.subtract(lookat).length();
     double theta = degreesToRadians(vfov);
     double h = Math.tan(theta / 2);
-    double viewportHeight = 2 * h * focalLength;
+    double viewportHeight = 2 * h * focusDist;
     double viewportWidth = viewportHeight * width / height;
 
     // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
@@ -70,11 +80,16 @@ public class Camera {
     // Calculate the location of the upper left pixel.
     Vec3 viewportUpperLeft =
         center
-            .subtract(w.multiply(focalLength))
+            .subtract(w.multiply(focusDist))
             .subtract(viewportU.divide(2))
             .subtract(viewportV.divide(2));
 
     originPixel = viewportUpperLeft.add(pixelDeltaU.add(pixelDeltaV).multiply(0.5));
+
+    // Calculate the camera defocus disk basis vectors.
+    double defocusRadius = focusDist * Math.tan(degreesToRadians(defocusAngle / 2));
+    defocusDiskU = u.multiply(defocusRadius);
+    defocusDiskV = v.multiply(defocusRadius);
 
     // Render loop
     for (int j = 0; j < height; j++) {
@@ -97,15 +112,15 @@ public class Camera {
     return image;
   }
 
-  // Construct a camera ray originating from the origin and directed at randomly sampled
-  // point around the pixel location i, j.
+  // Construct a camera ray originating from the defocus disk and directed at a randomly
+  // sampled point around the pixel location i, j.
   private Ray getRay(int i, int j) {
     Vec3 offset = sampleSquare();
 
     Vec3 pixelSample =
         originPixel.add(pixelDeltaU.multiply(i + offset.x)).add(pixelDeltaV.multiply(j + offset.y));
 
-    Vec3 rayOrigin = center;
+    Vec3 rayOrigin = (defocusAngle <= 0) ? center : defocusDiskSample();
     Vec3 rayDirection = pixelSample.subtract(rayOrigin);
 
     return new Ray(rayOrigin, rayDirection);
@@ -114,6 +129,12 @@ public class Camera {
   private Vec3 sampleSquare() {
     // Returns the vector to a random point in the [-.5,-.5]-[+.5,+.5] unit square.
     return new Vec3(randomDouble() - 0.5, randomDouble() - 0.5, 0);
+  }
+
+  private Vec3 defocusDiskSample() {
+    // Returns a random point in the camera defocus disk.
+    Vec3 p = randomInUnitDisk();
+    return center.add(defocusDiskU.multiply(p.x)).add(defocusDiskV.multiply(p.y));
   }
 
   private Vec3 rayColor(Ray r, int depth, Hittable world) {

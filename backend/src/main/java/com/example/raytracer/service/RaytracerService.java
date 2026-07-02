@@ -32,6 +32,12 @@ public class RaytracerService {
     world.add(new Sphere(new Vec3(-1.0, 0.0, -1.0), 0.4, materialBubble));
     world.add(new Sphere(new Vec3(1.0, 0.0, -1.0), 0.5, materialRight));
 
+    double defocusAngle = 10;
+    double focusDist = 3.4;
+    Vec3 lookFrom = new Vec3(-2, 2, 1);
+    Vec3 lookAt = new Vec3(0, 0, -1);
+    Vec3 vup = new Vec3(0, 1, 0);
+
     Camera camera =
         new Camera(
             width,
@@ -39,9 +45,11 @@ public class RaytracerService {
             pixelPerSamples,
             50,
             vfov,
-            new Vec3(-2, 2, 1),
-            new Vec3(0, 0, -1),
-            new Vec3(0, 1, 0));
+            lookFrom,
+            lookAt,
+            vup,
+            defocusAngle,
+            focusDist);
     return camera.render(world);
   }
 }

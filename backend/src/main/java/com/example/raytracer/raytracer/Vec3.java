@@ -104,4 +104,11 @@ public class Vec3 {
     double s = 1e-8;
     return (Math.abs(x) < s) && (Math.abs(y) < s) && (Math.abs(z) < s);
   }
+
+  public static Vec3 randomInUnitDisk() {
+    while (true) {
+      Vec3 p = new Vec3(randomDouble(-1, 1), randomDouble(-1, 1), 0);
+      if (p.lengthSquared() < 1) return p;
+    }
+  }
 }
