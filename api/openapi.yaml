@@ -17,24 +17,24 @@ paths:
           schema:
             type: integer
             minimum: 100
-            maximum: 1000
-            default: 400
+            maximum: 500
+            default: 300
         - name: height
           in: query
           required: true
           schema:
             type: integer
             minimum: 100
-            maximum: 1000
-            default: 400
+            maximum: 500
+            default: 300
         - name: samplesPerPixel
           in: query
           required: true
           schema:
             type: integer
             minimum: 1
-            maximum: 300
-            default: 100
+            maximum: 100
+            default: 30
         - name: vfov
           description: Vertical field of vision
           in: query

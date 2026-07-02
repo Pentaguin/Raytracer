@@ -5,11 +5,14 @@ public class Sphere implements Hittable {
   private final Vec3 center;
   private final double radius;
   private final Material material;
+  private final Aabb bbox;
 
   public Sphere(Vec3 center, double radius, Material material) {
     this.center = center;
     this.radius = Math.max(0, radius);
     this.material = material;
+    Vec3 rVec = new Vec3(this.radius, this.radius, this.radius);
+    this.bbox = new Aabb(center.subtract(rVec), center.add(rVec));
   }
 
   @Override
@@ -47,5 +50,10 @@ public class Sphere implements Hittable {
     rec.material = this.material;
 
     return true;
+  }
+
+  @Override
+  public Aabb boundingBox() {
+    return bbox;
   }
 }

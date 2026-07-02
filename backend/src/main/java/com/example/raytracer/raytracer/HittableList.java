@@ -5,6 +5,7 @@ import java.util.List;
 
 public class HittableList implements Hittable {
   private final List<Hittable> hittableList = new ArrayList<>();
+  private Aabb bbox = Aabb.EMPTY;
 
   public HittableList() {}
 
@@ -18,6 +19,11 @@ public class HittableList implements Hittable {
 
   public void add(Hittable object) {
     hittableList.add(object);
+    bbox = new Aabb(bbox, object.boundingBox());
+  }
+
+  public List<Hittable> getObjects() {
+    return hittableList;
   }
 
   @Override
@@ -41,5 +47,10 @@ public class HittableList implements Hittable {
     }
 
     return hitAnything;
+  }
+
+  @Override
+  public Aabb boundingBox() {
+    return bbox;
   }
 }

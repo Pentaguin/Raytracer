@@ -7,6 +7,7 @@ import static com.example.raytracer.util.MathUtil.degreesToRadians;
 import static com.example.raytracer.util.MathUtil.randomDouble;
 
 import java.awt.image.BufferedImage;
+import java.util.stream.IntStream;
 
 public class Camera {
 
@@ -51,11 +52,10 @@ public class Camera {
     this.vup = vup;
     this.defocusAngle = defocusAngle;
     this.focusDist = focusDist;
+    setupCamera();
   }
 
-  public BufferedImage render(Hittable world) {
-    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
+  private void setupCamera() {
     center = lookfrom;
 
     // Determine viewport dimensions.
@@ -90,25 +90,28 @@ public class Camera {
     double defocusRadius = focusDist * Math.tan(degreesToRadians(defocusAngle / 2));
     defocusDiskU = u.multiply(defocusRadius);
     defocusDiskV = v.multiply(defocusRadius);
+  }
 
-    // Render loop
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
+  public BufferedImage render(Hittable world) {
+    int[] pixels = new int[width * height];
 
-        Vec3 pixelColor = new Vec3(0, 0, 0);
+    IntStream.range(0, height)
+        .parallel()
+        .forEach(
+            j -> {
+              for (int i = 0; i < width; i++) {
+                Vec3 pixelColor = new Vec3(0, 0, 0);
+                for (int s = 0; s < samplesPerPixel; s++) {
+                  Ray r = getRay(i, j);
+                  pixelColor = pixelColor.add(rayColor(r, maxDepth, world));
+                }
+                pixelColor = pixelColor.multiply(1.0 / samplesPerPixel);
+                pixels[j * width + i] = new Color().toRGB(pixelColor);
+              }
+            });
 
-        for (int s = 0; s < samplesPerPixel; s++) {
-
-          Ray r = getRay(i, j);
-          pixelColor = pixelColor.add(rayColor(r, maxDepth, world));
-        }
-        double pixelScale = 1.0 / samplesPerPixel;
-        pixelColor = pixelColor.multiply(pixelScale);
-
-        image.setRGB(i, j, new Color().toRGB(pixelColor));
-      }
-    }
-
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    image.setRGB(0, 0, width, height, pixels, 0, width);
     return image;
   }
 
@@ -138,24 +141,25 @@ public class Camera {
   }
 
   private Vec3 rayColor(Ray r, int depth, Hittable world) {
-    // If we've exceeded the ray bounce limit, no more light is gathered.
     if (depth <= 0) return new Vec3(0, 0, 0);
 
     HitRecord rec = new HitRecord();
-
     if (world.hit(r, new Interval(0.001, Double.POSITIVE_INFINITY), rec)) {
       ScatterResult s = rec.material.scatter(r, rec);
+      if (s == null) return new Vec3(0, 0, 0);
 
-      if (s != null) {
-        return rayColor(s.scattered(), depth - 1, world).multiply(s.attenuation());
+      // Russian roulette: after a few bounces, randomly kill low-contribution paths
+      if (depth < maxDepth - 3) {
+        double p = Math.max(s.attenuation().x, Math.max(s.attenuation().y, s.attenuation().z));
+        if (randomDouble() > p) return new Vec3(0, 0, 0);
+        return rayColor(s.scattered(), depth - 1, world).multiply(s.attenuation()).divide(p);
       }
 
-      return new Vec3(0, 0, 0);
+      return rayColor(s.scattered(), depth - 1, world).multiply(s.attenuation());
     }
 
     Vec3 unitDirection = r.getDirection().normalize();
     double t = 0.5 * (unitDirection.y + 1.0);
-
     return new Vec3(1.0, 1.0, 1.0).multiply(1.0 - t).add(new Vec3(0.5, 0.7, 1.0).multiply(t));
   }
 }

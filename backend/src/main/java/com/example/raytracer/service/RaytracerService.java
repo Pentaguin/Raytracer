@@ -1,5 +1,6 @@
 package com.example.raytracer.service;
 
+import com.example.raytracer.raytracer.BvhNode;
 import com.example.raytracer.raytracer.Camera;
 import com.example.raytracer.raytracer.HittableList;
 import com.example.raytracer.raytracer.SampleSceneBuilder;
@@ -15,6 +16,7 @@ public class RaytracerService {
   public BufferedImage render(int width, int height, int samplesPerPixel, double vfov) {
 
     HittableList world = SampleSceneBuilder.randomScene();
+    BvhNode bvhWorld = new BvhNode(world);
 
     Camera camera =
         new Camera(
@@ -30,6 +32,6 @@ public class RaytracerService {
             10.0 // focus dist
             );
 
-    return camera.render(world);
+    return camera.render(bvhWorld);
   }
 }
