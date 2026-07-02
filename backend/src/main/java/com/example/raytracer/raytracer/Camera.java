@@ -85,7 +85,7 @@ public class Camera {
         for (int s = 0; s < samplesPerPixel; s++) {
 
           Ray r = getRay(i, j);
-          pixelColor = pixelColor.add(rayColor(r, maxDepth ,world));
+          pixelColor = pixelColor.add(rayColor(r, maxDepth, world));
         }
         double pixelScale = 1.0 / samplesPerPixel;
         pixelColor = pixelColor.multiply(pixelScale);
@@ -118,8 +118,7 @@ public class Camera {
 
   private Vec3 rayColor(Ray r, int depth, Hittable world) {
     // If we've exceeded the ray bounce limit, no more light is gathered.
-    if (depth <= 0)
-      return new Vec3(0,0,0);
+    if (depth <= 0) return new Vec3(0, 0, 0);
 
     HitRecord rec = new HitRecord();
 
@@ -127,8 +126,7 @@ public class Camera {
       ScatterResult s = rec.material.scatter(r, rec);
 
       if (s != null) {
-        return rayColor(s.scattered(), depth - 1, world)
-                .multiply(s.attenuation());
+        return rayColor(s.scattered(), depth - 1, world).multiply(s.attenuation());
       }
 
       return new Vec3(0, 0, 0);

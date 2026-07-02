@@ -53,7 +53,7 @@ public class Vec3 {
   }
 
   public static Vec3 random(double min, double max) {
-    return new Vec3(randomDouble(min,max), randomDouble(min,max), randomDouble(min,max));
+    return new Vec3(randomDouble(min, max), randomDouble(min, max), randomDouble(min, max));
   }
 
   public Vec3 normalize() {
@@ -75,19 +75,17 @@ public class Vec3 {
   public static Vec3 randomUnitVector() {
     while (true) {
       double minLengthSquared = 1e-160;
-      Vec3 p = Vec3.random(-1,1);
+      Vec3 p = Vec3.random(-1, 1);
       double lensq = p.lengthSquared();
-      if (minLengthSquared < lensq && lensq <= 1)
-        return p .divide(Math.sqrt(lensq));
+      if (minLengthSquared < lensq && lensq <= 1) return p.divide(Math.sqrt(lensq));
     }
   }
 
   public static Vec3 randomOnHemisphere(Vec3 normal) {
     Vec3 onUnitSphere = randomUnitVector();
     if (dot(onUnitSphere, normal) > 0.0) // In the same hemisphere as the normal
-      return onUnitSphere;
-    else
-      return onUnitSphere.negate();
+    return onUnitSphere;
+    else return onUnitSphere.negate();
   }
 
   public static Vec3 reflect(Vec3 v, Vec3 n) {
@@ -96,8 +94,7 @@ public class Vec3 {
 
   public static Vec3 refract(Vec3 uv, Vec3 n, double etaiOverEtat) {
     double cosTheta = Math.min(dot(uv.negate(), n), 1.0);
-    Vec3 rOutPerp =  uv.add(n.multiply(cosTheta))
-            .multiply(etaiOverEtat) ;
+    Vec3 rOutPerp = uv.add(n.multiply(cosTheta)).multiply(etaiOverEtat);
     Vec3 rOutParallel = n.multiply(-Math.sqrt(Math.abs(1.0 - rOutPerp.lengthSquared())));
     return rOutPerp.add(rOutParallel);
   }
