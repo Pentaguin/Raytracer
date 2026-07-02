@@ -18,9 +18,9 @@ public class RaytracerController implements RenderApi {
 
   @Override
   public ResponseEntity<byte[]> renderImage(
-      Integer width, Integer height, Integer samplesPerPixel) {
+      Integer width, Integer height, Integer samplesPerPixel, Double vfov) {
 
-    BufferedImage img = raytracerService.render(width, height, samplesPerPixel);
+    BufferedImage img = raytracerService.render(width, height, samplesPerPixel, vfov);
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     try {

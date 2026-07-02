@@ -35,6 +35,13 @@ paths:
             minimum: 1
             maximum: 300
             default: 100
+        - name: vfov
+          description: Vertical field of vision
+          in: query
+          required: true
+          schema:
+            type: double
+            default: 90
       responses:
         "200":
           description: Rendered image

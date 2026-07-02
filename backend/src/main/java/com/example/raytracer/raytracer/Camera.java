@@ -1,5 +1,8 @@
 package com.example.raytracer.raytracer;
 
+import static com.example.raytracer.raytracer.Vec3.cross;
+import static com.example.raytracer.raytracer.Vec3.unitVector;
+import static com.example.raytracer.util.MathUtil.degreesToRadians;
 import static com.example.raytracer.util.MathUtil.randomDouble;
 
 import java.awt.image.BufferedImage;
@@ -8,38 +11,66 @@ public class Camera {
 
   private final int width;
   private final int height;
-  private final int samplesPerPixel;
-  private Vec3 originPixel;
-  private Vec3 pixelDeltaU;
-  private Vec3 pixelDeltaV;
-  private Vec3 center;
-  private int maxDepth;
+  private final int samplesPerPixel; // Count of random samples for each pixel
+  private Vec3 originPixel; // Location of pixel 0, 0
+  private Vec3 pixelDeltaU; // Offset to pixel to the right
+  private Vec3 pixelDeltaV; // Offset to pixel below
+  private Vec3 center; // Camera center
+  private int maxDepth; // Maximum number of ray bounces into scene
+  private double vfov; // Vertical view angle (field of view)
+  private Vec3 u, v, w; // Camera frame basis vectors
+  private Vec3 lookfrom; // Point camera is looking from
+  private Vec3 lookat; // Point camera is looking at
+  private Vec3 vup; // Camera-relative "up" direction
 
-  public Camera(int width, int height, int samplesPerPixel, int maxDepth) {
+  public Camera(
+      int width,
+      int height,
+      int samplesPerPixel,
+      int maxDepth,
+      double vfov,
+      Vec3 lookfrom,
+      Vec3 lookat,
+      Vec3 vup) {
     this.width = width;
     this.height = height;
     this.samplesPerPixel = samplesPerPixel;
     this.maxDepth = maxDepth;
+    this.vfov = vfov;
+    this.lookfrom = lookfrom;
+    this.lookat = lookat;
+    this.vup = vup;
   }
 
   public BufferedImage render(Hittable world) {
     BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-    // Camera setup
-    center = new Vec3(0, 0, 0);
-    double focalLength = 1.0;
-    double viewportHeight = 2.0;
+    center = lookfrom;
+
+    // Determine viewport dimensions.
+    double focalLength = lookfrom.subtract(lookat).length();
+    double theta = degreesToRadians(vfov);
+    double h = Math.tan(theta / 2);
+    double viewportHeight = 2 * h * focalLength;
     double viewportWidth = viewportHeight * width / height;
 
-    Vec3 viewportU = new Vec3(viewportWidth, 0, 0);
-    Vec3 viewportV = new Vec3(0, -viewportHeight, 0);
+    // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
+    w = unitVector(lookfrom.subtract(lookat));
+    u = unitVector(cross(vup, w));
+    v = cross(w, u);
 
+    // Calculate the vectors across the horizontal and down the vertical viewport edges.
+    Vec3 viewportU = u.multiply(viewportWidth); // Vector across viewport horizontal edge
+    Vec3 viewportV = v.negate().multiply(viewportHeight); // Vector down viewport vertical edge
+
+    // Calculate the horizontal and vertical delta vectors from pixel to pixel.
     pixelDeltaU = viewportU.divide(width);
     pixelDeltaV = viewportV.divide(height);
 
+    // Calculate the location of the upper left pixel.
     Vec3 viewportUpperLeft =
         center
-            .subtract(new Vec3(0, 0, focalLength))
+            .subtract(w.multiply(focalLength))
             .subtract(viewportU.divide(2))
             .subtract(viewportV.divide(2));
 
