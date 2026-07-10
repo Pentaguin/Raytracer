@@ -25,37 +25,6 @@ Thumbs.db
 logs/
 
 ##################################################
-# Java / Maven
-##################################################
-
-# Maven build output
-**/target/
-
-# Java compiled classes
-*.class
-
-# JVM crash logs
-hs_err_pid*
-replay_pid*
-
-##################################################
-# React / Node
-##################################################
-
-# Dependencies
-**/node_modules/
-
-# Build output
-**/dist/
-**/build/
-
-# Package manager logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-##################################################
 # Environment files
 ##################################################
 
